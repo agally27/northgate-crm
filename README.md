@@ -1,4 +1,4 @@
-# Keel CRM
+# Northgate CRM
 
 A simple, modern, multi-tenant CRM for small and medium-sized businesses of any kind: trades, consultants, agencies, professional services, retailers, SaaS, property, recruitment, charities and local service businesses.
 
