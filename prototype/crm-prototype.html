@@ -1,0 +1,696 @@
+<title>Keel CRM Prototype</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,600;12..96,700&family=IBM+Plex+Sans:ital,wght@0,400;0,500;0,600;1,400&display=swap">
+<style>
+:root{
+  --bg:#F3F5F4;--surface:#FFFFFF;--surface-2:#E9ECEB;--surface-3:#DFE3E1;--border:#D9DEDC;--border-strong:#C3CAC7;
+  --text:#18201C;--muted:#5B6661;--faint:#8A938F;
+  --accent:#1E5A8A;--accent-ink:#FFFFFF;--accent-soft:#E1ECF5;--accent-soft-ink:#164A72;
+  --good:#257A4C;--good-soft:#DFF0E5;--warn:#A8701A;--warn-soft:#F7ECD3;--crit:#B4362E;--crit-soft:#F6DFDD;
+  --st1:#2F6FB5;--st1-soft:#DEEAF7;--st2:#6A55A8;--st2-soft:#E8E2F5;--st3:#B57A16;--st3-soft:#F6E9CE;
+  --shadow:0 1px 2px rgba(20,30,26,.06),0 6px 18px rgba(20,30,26,.06);
+  --sidebar:#1B2A25;--sidebar-text:#C8D3CE;--sidebar-muted:#7F918A;--sidebar-active:#27423A;
+  --radius:8px;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#111513;--surface:#191E1C;--surface-2:#202724;--surface-3:#2A322E;--border:#2B3430;--border-strong:#3B4641;
+    --text:#E6EBE8;--muted:#A2ADA7;--faint:#6E7974;
+    --accent:#6FB0E4;--accent-ink:#0E1A24;--accent-soft:#1A2E40;--accent-soft-ink:#A9D1F1;
+    --good:#5DBF8A;--good-soft:#173124;--warn:#DBA648;--warn-soft:#3A2D12;--crit:#E3736A;--crit-soft:#3E1D1A;
+    --st1:#6FA3E0;--st1-soft:#1A2B3F;--st2:#A594DC;--st2-soft:#2A2440;--st3:#DBA648;--st3-soft:#3A2D12;
+    --shadow:0 1px 2px rgba(0,0,0,.3),0 6px 18px rgba(0,0,0,.25);
+    --sidebar:#0D1210;--sidebar-text:#B9C5BF;--sidebar-muted:#6C7A74;--sidebar-active:#1C2723;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#111513;--surface:#191E1C;--surface-2:#202724;--surface-3:#2A322E;--border:#2B3430;--border-strong:#3B4641;
+  --text:#E6EBE8;--muted:#A2ADA7;--faint:#6E7974;
+  --accent:#6FB0E4;--accent-ink:#0E1A24;--accent-soft:#1A2E40;--accent-soft-ink:#A9D1F1;
+  --good:#5DBF8A;--good-soft:#173124;--warn:#DBA648;--warn-soft:#3A2D12;--crit:#E3736A;--crit-soft:#3E1D1A;
+  --st1:#6FA3E0;--st1-soft:#1A2B3F;--st2:#A594DC;--st2-soft:#2A2440;--st3:#DBA648;--st3-soft:#3A2D12;
+  --shadow:0 1px 2px rgba(0,0,0,.3),0 6px 18px rgba(0,0,0,.25);
+  --sidebar:#0D1210;--sidebar-text:#B9C5BF;--sidebar-muted:#6C7A74;--sidebar-active:#1C2723;
+}
+*{box-sizing:border-box}
+html,body{height:100%}
+body{margin:0;background:var(--bg);color:var(--text);font:14px/1.5 "IBM Plex Sans",system-ui,-apple-system,"Segoe UI",sans-serif;-webkit-font-smoothing:antialiased}
+h1,h2,h3,.display{font-family:"Bricolage Grotesque","IBM Plex Sans",system-ui,sans-serif;font-weight:600;letter-spacing:-.01em;margin:0;text-wrap:balance}
+h1{font-size:24px}h2{font-size:17px}h3{font-size:14px}
+a{color:var(--accent);text-decoration:none}
+button{font:inherit;color:inherit;cursor:pointer}
+input,select,textarea{font:inherit;color:inherit}
+.num{font-variant-numeric:tabular-nums}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+[hidden]{display:none!important}
+
+/* shell */
+.app{display:grid;grid-template-columns:232px 1fr;min-height:100vh}
+.sidebar{background:var(--sidebar);color:var(--sidebar-text);padding:16px 12px;display:flex;flex-direction:column;gap:6px;position:sticky;top:0;height:100vh}
+.org{display:flex;align-items:center;gap:10px;padding:8px 10px;border-radius:var(--radius);margin-bottom:10px}
+.org .mark{width:30px;height:30px;border-radius:7px;background:linear-gradient(135deg,#6FB0E4,#1E5A8A);display:grid;place-items:center;color:#fff;font-family:"Bricolage Grotesque",sans-serif;font-weight:700}
+.org .name{font-weight:600;color:#fff;line-height:1.2}
+.org .plan{font-size:11px;color:var(--sidebar-muted);letter-spacing:.04em;text-transform:uppercase}
+.nav a{display:flex;align-items:center;gap:10px;padding:8px 10px;border-radius:var(--radius);color:var(--sidebar-text);font-weight:500}
+.nav a:hover{background:rgba(255,255,255,.05)}
+.nav a.active{background:var(--sidebar-active);color:#fff}
+.nav a svg{width:17px;height:17px;flex:none;opacity:.85}
+.nav .count{margin-left:auto;font-size:11px;background:rgba(255,255,255,.1);padding:1px 7px;border-radius:99px;color:#fff}
+.nav .sect{font-size:11px;text-transform:uppercase;letter-spacing:.08em;color:var(--sidebar-muted);padding:14px 10px 4px}
+.sidebar .me{margin-top:auto;display:flex;align-items:center;gap:10px;padding:8px 10px;font-size:13px}
+.main{min-width:0;display:flex;flex-direction:column}
+.topbar{display:flex;align-items:center;gap:12px;padding:12px 28px;border-bottom:1px solid var(--border);background:var(--surface);position:sticky;top:0;z-index:5}
+.search{flex:1;max-width:520px;display:flex;align-items:center;gap:8px;background:var(--surface-2);border:1px solid transparent;border-radius:var(--radius);padding:7px 12px;color:var(--muted);cursor:text}
+.search:hover{border-color:var(--border-strong)}
+.search kbd{margin-left:auto;font:11px/1 "IBM Plex Sans",sans-serif;background:var(--surface);border:1px solid var(--border);border-radius:4px;padding:3px 5px;color:var(--faint)}
+.btn{display:inline-flex;align-items:center;gap:6px;border:1px solid var(--border-strong);background:var(--surface);border-radius:var(--radius);padding:7px 12px;font-weight:500;white-space:nowrap}
+.btn:hover{background:var(--surface-2)}
+.btn.primary{background:var(--accent);color:var(--accent-ink);border-color:var(--accent)}
+.btn.primary:hover{filter:brightness(1.08)}
+.btn.small{padding:4px 9px;font-size:13px}
+.btn.ghost{border-color:transparent;background:transparent}
+.btn.ghost:hover{background:var(--surface-2)}
+.avatar{width:28px;height:28px;border-radius:50%;display:inline-grid;place-items:center;font-size:11px;font-weight:600;flex:none;background:var(--accent-soft);color:var(--accent-soft-ink)}
+.avatar.lg{width:52px;height:52px;font-size:18px}
+.avatar.c2{background:var(--st2-soft);color:var(--st2)}.avatar.c3{background:var(--st3-soft);color:var(--st3)}.avatar.c4{background:var(--good-soft);color:var(--good)}
+.page{padding:24px 28px 48px;display:flex;flex-direction:column;gap:20px}
+.page-head{display:flex;align-items:flex-end;justify-content:space-between;gap:16px;flex-wrap:wrap}
+.page-head .sub{color:var(--muted);margin-top:2px}
+.crumb{font-size:13px;color:var(--muted);margin-bottom:6px}
+.crumb a{color:var(--muted)}.crumb a:hover{color:var(--accent)}
+
+/* cards & tables */
+.card{background:var(--surface);border:1px solid var(--border);border-radius:10px}
+.card .hd{display:flex;align-items:center;justify-content:space-between;padding:14px 16px;border-bottom:1px solid var(--border)}
+.card .bd{padding:16px}
+.table{width:100%;border-collapse:collapse}
+.table th{text-align:left;font-size:11.5px;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);font-weight:600;padding:10px 14px;border-bottom:1px solid var(--border);white-space:nowrap}
+.table td{padding:11px 14px;border-bottom:1px solid var(--border);vertical-align:middle}
+.table tr:last-child td{border-bottom:0}
+.table tbody tr{cursor:pointer}
+.table tbody tr:hover td{background:var(--surface-2)}
+.table .who{display:flex;align-items:center;gap:10px;font-weight:500}
+.table .who small{display:block;color:var(--muted);font-weight:400}
+.wrap{overflow-x:auto}
+.pill{display:inline-flex;align-items:center;gap:5px;border-radius:99px;padding:2px 9px;font-size:12px;font-weight:500;line-height:1.5;white-space:nowrap}
+.pill::before{content:"";width:6px;height:6px;border-radius:50%;background:currentColor}
+.pill.good{background:var(--good-soft);color:var(--good)}
+.pill.warn{background:var(--warn-soft);color:var(--warn)}
+.pill.crit{background:var(--crit-soft);color:var(--crit)}
+.pill.acc{background:var(--accent-soft);color:var(--accent-soft-ink)}
+.pill.s1{background:var(--st1-soft);color:var(--st1)}.pill.s2{background:var(--st2-soft);color:var(--st2)}.pill.s3{background:var(--st3-soft);color:var(--st3)}
+.pill.neutral{background:var(--surface-2);color:var(--muted)}
+.tag{display:inline-block;background:var(--surface-2);border:1px solid var(--border);border-radius:5px;padding:1px 7px;font-size:12px;color:var(--muted);margin-right:4px}
+.filters{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.chip{border:1px solid var(--border);background:var(--surface);border-radius:99px;padding:5px 12px;font-size:13px;color:var(--muted)}
+.chip.on{background:var(--accent-soft);color:var(--accent-soft-ink);border-color:transparent;font-weight:500}
+.chip:hover{border-color:var(--border-strong)}
+.empty{padding:40px;text-align:center;color:var(--muted)}
+
+/* dashboard */
+.tiles{display:grid;grid-template-columns:repeat(6,1fr);gap:12px}
+.tile{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:14px 16px;display:flex;flex-direction:column;gap:4px;min-width:0}
+.tile .label{font-size:12px;color:var(--muted);font-weight:500}
+.tile .value{font-family:"Bricolage Grotesque",sans-serif;font-size:26px;font-weight:600;letter-spacing:-.02em;line-height:1.1}
+.tile .delta{font-size:12px;color:var(--muted)}
+.tile .delta.up{color:var(--good)}.tile .delta.down{color:var(--crit)}
+.grid2{display:grid;grid-template-columns:3fr 2fr;gap:16px}
+.bars{display:flex;flex-direction:column;gap:10px}
+.bar{display:grid;grid-template-columns:120px 1fr 90px 40px;align-items:center;gap:12px;font-size:13px}
+.bar .track{height:22px;background:var(--surface-2);border-radius:5px;overflow:hidden}
+.bar .fill{height:100%;border-radius:5px;display:flex;align-items:center;padding-left:8px;font-size:11.5px;font-weight:600;color:#fff;min-width:28px}
+.bar .val{text-align:right;font-weight:500}
+.bar .n{text-align:right;color:var(--muted)}
+.list{display:flex;flex-direction:column}
+.list .row{display:flex;align-items:center;gap:12px;padding:10px 16px;border-bottom:1px solid var(--border);cursor:pointer}
+.list .row:last-child{border-bottom:0}
+.list .row:hover{background:var(--surface-2)}
+.list .row .grow{flex:1;min-width:0}
+.list .row .t{font-weight:500}
+.list .row .s{font-size:12.5px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.check{width:18px;height:18px;border-radius:5px;border:1.5px solid var(--border-strong);background:var(--surface);display:grid;place-items:center;flex:none;padding:0}
+.check.done{background:var(--good);border-color:var(--good);color:#fff}
+.row.done .t{text-decoration:line-through;color:var(--muted)}
+
+/* detail */
+.detail{display:grid;grid-template-columns:300px 1fr 280px;gap:16px;align-items:start}
+.dl{display:grid;grid-template-columns:110px 1fr;gap:8px 12px;font-size:13.5px}
+.dl dt{color:var(--muted)}.dl dd{margin:0;min-width:0;overflow-wrap:anywhere}
+.head-card{display:flex;align-items:center;gap:16px}
+.head-card .title{flex:1;min-width:0}
+.head-card .meta{color:var(--muted);margin-top:2px}
+.composer{padding:12px 16px;border-bottom:1px solid var(--border)}
+.tabs{display:flex;gap:2px;margin-bottom:8px}
+.tabs button{border:0;background:transparent;padding:4px 10px;border-radius:6px;color:var(--muted);font-weight:500;font-size:13px}
+.tabs button.on{background:var(--surface-2);color:var(--text)}
+.composer textarea{width:100%;border:1px solid var(--border);border-radius:var(--radius);padding:9px 11px;resize:vertical;min-height:58px;background:var(--surface)}
+.composer .foot{display:flex;justify-content:flex-end;gap:8px;margin-top:8px}
+.timeline{padding:6px 16px 12px}
+.day{font-size:11.5px;text-transform:uppercase;letter-spacing:.07em;color:var(--muted);font-weight:600;padding:14px 0 6px}
+.ev{display:grid;grid-template-columns:28px 1fr;gap:12px;padding:8px 0;border-bottom:1px solid var(--border)}
+.ev:last-child{border-bottom:0}
+.ev .ico{width:28px;height:28px;border-radius:50%;display:grid;place-items:center;background:var(--surface-2);color:var(--muted)}
+.ev .ico svg{width:14px;height:14px}
+.ev .ico.note{background:var(--st3-soft);color:var(--st3)}.ev .ico.call{background:var(--good-soft);color:var(--good)}.ev .ico.email{background:var(--st1-soft);color:var(--st1)}.ev .ico.meeting{background:var(--st2-soft);color:var(--st2)}
+.ev .hd2{display:flex;gap:8px;align-items:baseline;flex-wrap:wrap}
+.ev .hd2 b{font-weight:600}
+.ev .hd2 .when{color:var(--faint);font-size:12px;margin-left:auto}
+.ev .body{color:var(--muted);margin-top:2px;white-space:pre-line}
+.ev .rel{margin-top:4px;display:flex;gap:4px;flex-wrap:wrap}
+.mini{display:flex;flex-direction:column;gap:8px}
+.mini .it{display:flex;align-items:center;gap:8px;padding:8px 10px;border:1px solid var(--border);border-radius:var(--radius);cursor:pointer}
+.mini .it:hover{background:var(--surface-2)}
+.mini .it .grow{flex:1;min-width:0}
+.mini .it .t{font-weight:500;font-size:13px}
+.mini .it .s{font-size:12px;color:var(--muted)}
+
+/* board */
+.board{display:grid;grid-auto-flow:column;grid-auto-columns:260px;gap:12px;overflow-x:auto;padding-bottom:12px;align-items:start}
+.col{background:var(--surface-2);border-radius:10px;padding:10px;display:flex;flex-direction:column;gap:8px;min-height:200px}
+.col.over{outline:2px dashed var(--accent);outline-offset:-2px}
+.col .ch{display:flex;align-items:center;gap:8px;padding:2px 4px 6px}
+.col .ch .dot{width:8px;height:8px;border-radius:50%}
+.col .ch b{font-weight:600}
+.col .ch .n{color:var(--muted);font-size:12px}
+.col .ch .sum{margin-left:auto;font-size:12px;color:var(--muted);font-weight:500}
+.opp{background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:10px 12px;cursor:grab;box-shadow:0 1px 1px rgba(0,0,0,.03)}
+.opp:active{cursor:grabbing}
+.opp.dragging{opacity:.4}
+.opp .t{font-weight:500;line-height:1.3}
+.opp .co{font-size:12.5px;color:var(--muted);margin-top:2px}
+.opp .ft{display:flex;align-items:center;gap:8px;margin-top:8px;font-size:12.5px}
+.opp .ft .v{font-weight:600}
+.opp .ft .age{color:var(--faint);margin-left:auto}
+.opp .stale{display:inline-flex;align-items:center;gap:4px;color:var(--warn);font-weight:500;font-size:12px}
+.opp .stale svg{width:12px;height:12px}
+.opp .av{display:flex;align-items:center;gap:6px}
+.opp .avatar{width:20px;height:20px;font-size:9px}
+
+/* tasks */
+.groups{display:flex;flex-direction:column;gap:16px}
+.group h3{display:flex;align-items:center;gap:8px;padding:0 0 8px}
+.group h3 .n{font-size:12px;color:var(--muted);font-weight:500}
+.group h3.crit{color:var(--crit)}
+.prio{font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.05em}
+.prio.high,.prio.urgent{color:var(--crit)}.prio.normal{color:var(--muted)}.prio.low{color:var(--faint)}
+
+/* settings */
+.stages{display:flex;flex-direction:column;gap:6px}
+.stage{display:grid;grid-template-columns:18px 14px 1fr 90px 90px 80px;align-items:center;gap:12px;padding:10px 12px;border:1px solid var(--border);border-radius:var(--radius);background:var(--surface)}
+.stage .grip{color:var(--faint);cursor:grab}
+.stage .dot{width:12px;height:12px;border-radius:50%}
+.stage input{border:1px solid transparent;background:transparent;border-radius:5px;padding:4px 6px;width:100%}
+.stage input:hover{border-color:var(--border)}
+.stage input:focus{border-color:var(--accent);background:var(--surface)}
+.stage .k{font-size:12px;color:var(--muted)}
+.settings-nav{display:flex;gap:6px;flex-wrap:wrap}
+
+/* overlays */
+.overlay{position:fixed;inset:0;background:rgba(10,14,12,.45);display:grid;place-items:start center;padding-top:12vh;z-index:20}
+.panel{width:min(600px,92vw);background:var(--surface);border:1px solid var(--border);border-radius:12px;box-shadow:var(--shadow);overflow:hidden}
+.panel .in{display:flex;align-items:center;gap:10px;padding:14px 16px;border-bottom:1px solid var(--border)}
+.panel .in input{flex:1;border:0;background:transparent;font-size:16px;outline:0}
+.results{max-height:50vh;overflow:auto;padding:6px}
+.results .grp{font-size:11px;text-transform:uppercase;letter-spacing:.07em;color:var(--muted);padding:10px 10px 4px;font-weight:600}
+.results .r{display:flex;align-items:center;gap:10px;padding:8px 10px;border-radius:7px;cursor:pointer}
+.results .r:hover,.results .r.sel{background:var(--surface-2)}
+.results .r .s{color:var(--muted);font-size:12.5px;margin-left:auto}
+.form{display:grid;grid-template-columns:1fr 1fr;gap:12px;padding:16px}
+.form label{display:flex;flex-direction:column;gap:4px;font-size:12.5px;color:var(--muted);font-weight:500}
+.form input,.form select{border:1px solid var(--border);border-radius:var(--radius);padding:8px 10px;background:var(--surface)}
+.form .full{grid-column:1/-1}
+.form .hint{grid-column:1/-1;display:flex;gap:8px;align-items:center;background:var(--warn-soft);color:var(--warn);border-radius:var(--radius);padding:8px 10px;font-size:13px}
+.panel .ft{display:flex;justify-content:flex-end;gap:8px;padding:12px 16px;border-top:1px solid var(--border)}
+.toast{position:fixed;bottom:20px;left:50%;transform:translateX(-50%);background:var(--text);color:var(--bg);padding:9px 14px;border-radius:8px;font-weight:500;box-shadow:var(--shadow);z-index:30}
+.proto{position:fixed;right:14px;bottom:14px;font-size:11px;color:var(--faint);background:var(--surface);border:1px solid var(--border);border-radius:99px;padding:4px 10px;z-index:4}
+
+@media (max-width:1100px){.tiles{grid-template-columns:repeat(3,1fr)}.detail{grid-template-columns:1fr}.grid2{grid-template-columns:1fr}}
+@media (max-width:760px){
+  .app{grid-template-columns:1fr}
+  .sidebar{position:fixed;left:0;right:0;bottom:0;top:auto;height:auto;flex-direction:row;padding:6px 8px;gap:2px;z-index:10;overflow-x:auto}
+  .sidebar .org,.sidebar .sect,.sidebar .me,.nav .count{display:none}
+  .nav{display:flex;flex:1;justify-content:space-around}
+  .nav a{flex-direction:column;gap:3px;font-size:10.5px;padding:6px 8px}
+  .page{padding:16px 14px 90px}.topbar{padding:10px 14px}
+  .tiles{grid-template-columns:repeat(2,1fr)}
+  .stage{grid-template-columns:18px 14px 1fr 70px}
+  .stage .k:nth-last-child(-n+2){display:none}
+}
+@media (prefers-reduced-motion:no-preference){.opp,.chip,.btn{transition:background .12s,opacity .12s}}
+</style>
+
+<div class="app">
+  <aside class="sidebar">
+    <div class="org">
+      <div class="mark">N</div>
+      <div><div class="name">Northgate Studio</div><div class="plan">Starter plan</div></div>
+    </div>
+    <nav class="nav" id="nav"></nav>
+    <div class="me"><span class="avatar">AG</span><div><div style="color:#fff;font-weight:500">Andy</div><div style="font-size:11px;color:var(--sidebar-muted)">Owner</div></div></div>
+  </aside>
+  <div class="main">
+    <header class="topbar">
+      <div class="search" id="searchBtn" role="button" tabindex="0">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
+        <span>Search contacts, companies, deals…</span><kbd>⌘K</kbd>
+      </div>
+      <span style="flex:1"></span>
+      <button class="btn primary" id="newBtn">+ New contact</button>
+    </header>
+    <section id="view"></section>
+  </div>
+</div>
+<div class="overlay" id="cmdk" hidden></div>
+<div class="overlay" id="modal" hidden></div>
+<div class="proto">Prototype · sample data · nothing is saved</div>
+
+<script>
+/* ---------- sample data (fictional studio, fictional people) ---------- */
+const users = {ag:{n:'Andy',i:'AG',c:''},pn:{n:'Priya Nair',i:'PN',c:'c2'},to:{n:'Tom Okafor',i:'TO',c:'c3'}};
+const companies = [
+ {id:'c1',name:'Fairholme Property',domain:'fairholme.co.uk',industry:'Property',city:'Leeds',status:'customer',owner:'ag'},
+ {id:'c2',name:'Brightwater Dental',domain:'brightwaterdental.co.uk',industry:'Healthcare',city:'Harrogate',status:'prospect',owner:'pn'},
+ {id:'c3',name:'Oakridge Charity Trust',domain:'oakridgetrust.org',industry:'Charity',city:'York',status:'customer',owner:'ag'},
+ {id:'c4',name:'Lumen SaaS Ltd',domain:'lumen.app',industry:'Software',city:'Manchester',status:'customer',owner:'to'},
+ {id:'c5',name:'Hartley & Sons Plumbing',domain:'hartleyplumbing.co.uk',industry:'Trades',city:'Bradford',status:'prospect',owner:'pn'},
+ {id:'c6',name:'Meridian Recruitment',domain:'meridianrecruit.com',industry:'Recruitment',city:'Leeds',status:'customer',owner:'ag'},
+];
+let contacts = [
+ {id:'p1',first:'Sarah',last:'Fairholme',email:'sarah@fairholme.co.uk',phone:'0113 496 0021',mobile:'07700 900123',title:'Director',company:'c1',status:'customer',source:'Referral',owner:'ag',tags:['VIP','Property'],last:'2026-09-04'},
+ {id:'p2',first:'James',last:'Whitlock',email:'james.w@fairholme.co.uk',phone:'0113 496 0022',mobile:'',title:'Operations Manager',company:'c1',status:'customer',source:'Referral',owner:'ag',tags:['Property'],last:'2026-08-30'},
+ {id:'p3',first:'Emily',last:'Brightwater',email:'emily@brightwaterdental.co.uk',phone:'01423 496 300',mobile:'07700 900456',title:'Principal Dentist',company:'c2',status:'prospect',source:'Website',owner:'pn',tags:['Rebrand'],last:'2026-09-03'},
+ {id:'p4',first:'Marcus',last:'Oakes',email:'marcus@oakridgetrust.org',phone:'01904 496 110',mobile:'',title:'Fundraising Lead',company:'c3',status:'customer',source:'Event',owner:'ag',tags:['Charity'],last:'2026-09-01'},
+ {id:'p5',first:'Lena',last:'Vogel',email:'lena@lumen.app',phone:'0161 496 0777',mobile:'07700 900789',title:'Head of Marketing',company:'c4',status:'customer',source:'LinkedIn',owner:'to',tags:['Retainer','SaaS'],last:'2026-08-15'},
+ {id:'p6',first:'Daniel',last:'Hartley',email:'dan@hartleyplumbing.co.uk',phone:'01274 496 555',mobile:'07700 900321',title:'Owner',company:'c5',status:'prospect',source:'Phone',owner:'pn',tags:['Trades'],last:'2026-09-02'},
+ {id:'p7',first:'Aisha',last:'Rahman',email:'aisha@meridianrecruit.com',phone:'0113 496 0900',mobile:'',title:'Managing Director',company:'c6',status:'customer',source:'Referral',owner:'ag',tags:['VIP'],last:'2026-09-05'},
+ {id:'p8',first:'Chloe',last:'Bennett',email:'chloe@lumen.app',phone:'',mobile:'07700 900654',title:'Product Designer',company:'c4',status:'prospect',source:'LinkedIn',owner:'to',tags:['SaaS'],last:'2026-08-20'},
+ {id:'p9',first:'Rob',last:'Meyers',email:'rob@robmeyersphoto.com',phone:'',mobile:'07700 900987',title:'Photographer',company:'',status:'other',source:'Website',owner:'to',tags:[],last:'2026-08-28'},
+ {id:'p10',first:'Grace',last:'Adeyemi',email:'grace@brightwaterdental.co.uk',phone:'01423 496 301',mobile:'',title:'Practice Manager',company:'c2',status:'prospect',source:'Website',owner:'pn',tags:['Rebrand'],last:'2026-08-27'},
+ {id:'p11',first:'Owen',last:'Price',email:'owen@hartleyplumbing.co.uk',phone:'01274 496 556',mobile:'',title:'Office Manager',company:'c5',status:'prospect',source:'Phone',owner:'pn',tags:['Trades'],last:'2026-08-29'},
+ {id:'p12',first:'Hannah',last:'Kowalski',email:'hannah@oakridgetrust.org',phone:'01904 496 111',mobile:'',title:'Communications Officer',company:'c3',status:'customer',source:'Event',owner:'ag',tags:['Charity'],last:'2026-08-26'},
+];
+const leadStatuses = [{id:'new',n:'New',cls:'s1'},{id:'contacted',n:'Contacted',cls:'s2'},{id:'qualified',n:'Qualified',cls:'s3'},{id:'interested',n:'Interested',cls:'good'}];
+let leads = [
+ {id:'l1',name:'Fiona Marsh',co:'Marsh Bakery',email:'fiona@marshbakery.co.uk',source:'Website',status:'new',owner:'',created:'2026-09-06',note:'Opening a second shop in Ilkley. Wants a new website and refreshed branding before November.'},
+ {id:'l2',name:'Ravi Patel',co:'Patel Pharmacy',email:'ravi@patelpharmacy.co.uk',source:'Website',status:'new',owner:'',created:'2026-09-05',note:'Asked for a quote for a simple site with online repeat prescription form.'},
+ {id:'l3',name:'Kwame Boateng',co:'Boateng Legal',email:'kwame@boateng.law',source:'Referral',status:'contacted',owner:'ag',created:'2026-09-02',note:'Referred by Aisha Rahman. Left voicemail 3 Sept.'},
+ {id:'l4',name:'Sophie Grant',co:'Grant Landscaping',email:'sophie@grantlandscaping.co.uk',source:'Phone',status:'contacted',owner:'pn',created:'2026-08-30',note:'Wants van livery and a leaflet. Budget around £2k.'},
+ {id:'l5',name:'Isla Thornton',co:'Thornton Yoga',email:'isla@thorntonyoga.co.uk',source:'Social',status:'qualified',owner:'to',created:'2026-08-26',note:'Booking site plus brand. Budget confirmed £4–6k. Decision by end of September.'},
+ {id:'l6',name:'Peter Lindqvist',co:'Nordic Cycles',email:'peter@nordiccycles.co.uk',source:'Event',status:'interested',owner:'ag',created:'2026-08-20',note:'Met at Leeds Business Expo. Wants e-commerce. Proposal call booked 9 Sept.'},
+];
+let stages = [
+ {id:'qual',n:'Qualification',p:20,kind:'open',color:'var(--st1)',stale:14},
+ {id:'prop',n:'Proposal',p:40,kind:'open',color:'var(--st2)',stale:14},
+ {id:'nego',n:'Negotiation',p:70,kind:'open',color:'var(--st3)',stale:10},
+ {id:'won',n:'Won',p:100,kind:'won',color:'var(--good)',stale:null},
+ {id:'lost',n:'Lost',p:0,kind:'lost',color:'var(--faint)',stale:null},
+];
+let opps = [
+ {id:'o1',name:'Fairholme brochure site refresh',company:'c1',contact:'p1',value:8500,stage:'nego',owner:'ag',close:'2026-09-20',entered:'2026-08-29'},
+ {id:'o2',name:'Brightwater rebrand',company:'c2',contact:'p3',value:12000,stage:'prop',owner:'pn',close:'2026-10-02',entered:'2026-09-01'},
+ {id:'o3',name:'Oakridge annual campaign',company:'c3',contact:'p4',value:6200,stage:'qual',owner:'ag',close:'2026-10-15',entered:'2026-09-01'},
+ {id:'o4',name:'Lumen onboarding video series',company:'c4',contact:'p5',value:15000,stage:'prop',owner:'to',close:'2026-09-30',entered:'2026-08-14'},
+ {id:'o5',name:'Hartley van livery & website',company:'c5',contact:'p6',value:3400,stage:'qual',owner:'pn',close:'2026-09-12',entered:'2026-09-02'},
+ {id:'o6',name:'Meridian recruitment microsite',company:'c6',contact:'p7',value:9800,stage:'nego',owner:'ag',close:'2026-09-18',entered:'2026-08-25'},
+ {id:'o7',name:'Lumen retainer Q4',company:'c4',contact:'p5',value:18000,stage:'won',owner:'to',close:'2026-09-02',entered:'2026-09-02'},
+ {id:'o8',name:'Rob Meyers portfolio site',company:'',contact:'p9',value:1200,stage:'lost',owner:'to',close:'2026-08-28',entered:'2026-08-28',lostReason:'Chose a template builder'},
+ {id:'o9',name:'Oakridge donor portal',company:'c3',contact:'p12',value:11000,stage:'qual',owner:'ag',close:'2026-11-10',entered:'2026-09-04'},
+ {id:'o10',name:'Brightwater social templates',company:'c2',contact:'p10',value:2400,stage:'won',owner:'pn',close:'2026-08-25',entered:'2026-08-25'},
+];
+let tasks = [
+ {id:'t1',title:'Send revised proposal to Emily',due:'2026-09-03',prio:'high',who:'pn',done:false,rel:{contact:'p3',opp:'o2'}},
+ {id:'t2',title:'Chase Lena about video series scope',due:'2026-09-04',prio:'urgent',who:'to',done:false,rel:{contact:'p5',opp:'o4'}},
+ {id:'t3',title:'Call Fiona Marsh about second shop',due:'2026-09-06',prio:'high',who:'ag',done:false,rel:{lead:'l1'}},
+ {id:'t4',title:'Reply to Ravi Patel enquiry',due:'2026-09-06',prio:'normal',who:'ag',done:false,rel:{lead:'l2'}},
+ {id:'t5',title:'Confirm Sarah is happy with final copy',due:'2026-09-06',prio:'normal',who:'ag',done:true,rel:{contact:'p1',opp:'o1'}},
+ {id:'t6',title:'Prep e-commerce proposal for Nordic Cycles',due:'2026-09-07',prio:'high',who:'ag',done:false,rel:{lead:'l6'}},
+ {id:'t7',title:'Book kickoff with Aisha for microsite',due:'2026-09-09',prio:'normal',who:'ag',done:false,rel:{contact:'p7',opp:'o6'}},
+ {id:'t8',title:'Invoice Lumen for Q4 retainer',due:'2026-09-11',prio:'low',who:'to',done:false,rel:{contact:'p5',opp:'o7'}},
+];
+let activities = [
+ {id:'a1',type:'call',subject:'Call with Sarah',body:'Reviewed the final homepage copy. Sarah wants the team page moved above testimonials. Otherwise ready to sign off.',at:'2026-09-04T14:20',who:'ag',contact:'p1',company:'c1',opp:'o1'},
+ {id:'a2',type:'email',subject:'Re: Brochure site — final copy',body:'Sent the updated copy deck (v4) and asked for sign-off by Monday.',at:'2026-09-04T11:05',who:'ag',contact:'p1',company:'c1',opp:'o1',dir:'out'},
+ {id:'a3',type:'stage',subject:'Moved to Negotiation',body:'Proposal → Negotiation',at:'2026-08-29T09:30',who:'ag',contact:'p1',company:'c1',opp:'o1'},
+ {id:'a4',type:'note',subject:'Budget context',body:'Fairholme are refurbishing the Leeds office in October, so print collateral could follow the website. Worth raising once the site is live.',at:'2026-08-27T16:40',who:'ag',contact:'p1',company:'c1',pinned:true},
+ {id:'a5',type:'meeting',subject:'Discovery workshop',body:'90 min at their office with Sarah and James. Agreed scope: 8 pages, property search integration, CMS training.',at:'2026-08-20T10:00',who:'ag',contact:'p1',company:'c1',opp:'o1'},
+ {id:'a6',type:'system',subject:'Opportunity created',body:'Fairholme brochure site refresh · £8,500',at:'2026-08-18T09:12',who:'ag',contact:'p1',company:'c1',opp:'o1'},
+ {id:'a7',type:'email',subject:'Rebrand proposal v2',body:'Sent revised proposal with the two logo directions Emily preferred.',at:'2026-09-03T17:10',who:'pn',contact:'p3',company:'c2',opp:'o2',dir:'out'},
+ {id:'a8',type:'call',subject:'Quick call with Emily',body:'She is leaning towards direction B. Wants pricing broken out for signage separately.',at:'2026-09-03T12:30',who:'pn',contact:'p3',company:'c2',opp:'o2'},
+ {id:'a9',type:'meeting',subject:'Site visit',body:'Toured the practice, photographed current signage and interiors for the moodboard.',at:'2026-08-27T14:00',who:'pn',contact:'p3',company:'c2'},
+ {id:'a10',type:'email',subject:'Onboarding videos — scope questions',body:'Asked Lena to confirm number of videos and whether they need captions in German.',at:'2026-08-15T09:45',who:'to',contact:'p5',company:'c4',opp:'o4',dir:'out'},
+ {id:'a11',type:'stage',subject:'Won',body:'Negotiation → Won · £18,000',at:'2026-09-02T15:00',who:'to',contact:'p5',company:'c4',opp:'o7'},
+ {id:'a12',type:'call',subject:'Call with Aisha',body:'Happy with the microsite wireframes. Wants to add a candidate testimonial section. Sending revised quote.',at:'2026-09-05T10:15',who:'ag',contact:'p7',company:'c6',opp:'o6'},
+ {id:'a13',type:'note',subject:'Referral',body:'Aisha introduced us to Kwame Boateng (Boateng Legal). Logged as a lead.',at:'2026-09-02T11:00',who:'ag',contact:'p7',company:'c6'},
+ {id:'a14',type:'call',subject:'Intro call with Daniel',body:'Runs six vans. Wants the new logo on all of them plus a simple site with a booking form.',at:'2026-09-02T08:50',who:'pn',contact:'p6',company:'c5',opp:'o5'},
+ {id:'a15',type:'email',subject:'Campaign timeline',body:'Shared a draft timeline for the Christmas appeal. Marcus to confirm print deadlines.',at:'2026-09-01T13:20',who:'ag',contact:'p4',company:'c3',opp:'o3',dir:'out'},
+ {id:'a16',type:'system',subject:'Opportunity created',body:'Oakridge donor portal · £11,000',at:'2026-09-04T16:00',who:'ag',contact:'p12',company:'c3',opp:'o9'},
+];
+
+/* ---------- helpers ---------- */
+const TODAY = new Date('2026-09-06T09:00:00');
+const $ = s => document.querySelector(s);
+const esc = s => String(s ?? '').replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const gbp = n => '£' + n.toLocaleString('en-GB');
+const co = id => companies.find(c => c.id === id);
+const ct = id => contacts.find(c => c.id === id);
+const opp = id => opps.find(o => o.id === id);
+const ld = id => leads.find(l => l.id === id);
+const stg = id => stages.find(s => s.id === id);
+const full = c => `${c.first} ${c.last}`.trim();
+const initials = c => ((c.first?.[0] || '') + (c.last?.[0] || '')).toUpperCase() || c.n?.split(' ').map(w => w[0]).join('').slice(0,2);
+const av = (u, cls='') => { const x = users[u]; return x ? `<span class="avatar ${x.c} ${cls}" title="${x.n}">${x.i}</span>` : `<span class="avatar neutral ${cls}" style="background:var(--surface-2);color:var(--muted)">–</span>`; };
+const daysBetween = (a, b) => Math.round((new Date(b) - new Date(a)) / 864e5);
+const fmtDate = d => new Date(d).toLocaleDateString('en-GB', {day:'numeric', month:'short'});
+const fmtTime = d => new Date(d).toLocaleTimeString('en-GB', {hour:'2-digit', minute:'2-digit'});
+const rel = d => { const n = daysBetween(d.slice(0,10), TODAY.toISOString().slice(0,10)); return n === 0 ? 'today' : n === 1 ? 'yesterday' : n < 0 ? `in ${-n}d` : `${n}d ago`; };
+const statusPill = s => ({customer:'good',prospect:'acc',lead:'s2',former:'neutral',other:'neutral'}[s] || 'neutral');
+const isStale = o => { const s = stg(o.stage); return s.kind === 'open' && s.stale && daysBetween(o.entered, TODAY) > s.stale; };
+const go = h => { location.hash = h; };
+const toast = m => { const t = document.createElement('div'); t.className = 'toast'; t.textContent = m; document.body.appendChild(t); setTimeout(() => t.remove(), 2200); };
+
+const icons = {
+ dash:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="8" height="8" rx="1.5"/><rect x="13" y="3" width="8" height="5" rx="1.5"/><rect x="13" y="12" width="8" height="9" rx="1.5"/><rect x="3" y="15" width="8" height="6" rx="1.5"/></svg>',
+ contacts:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 3.6-7 8-7s8 3 8 7"/></svg>',
+ companies:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 21h18M5 21V5l7-2v18M12 21V9l7 2v10"/><path d="M8 8h1M8 12h1M8 16h1M15 14h1M15 17h1"/></svg>',
+ leads:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h16l-6 8v6l-4 2v-8z"/></svg>',
+ opps:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="5" height="16" rx="1"/><rect x="10" y="4" width="5" height="10" rx="1"/><rect x="17" y="4" width="4" height="13" rx="1"/></svg>',
+ tasks:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m4 12 4 4 12-12"/><path d="M4 20h16"/></svg>',
+ activity:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 12h4l3-8 4 16 3-8h4"/></svg>',
+ settings:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg>',
+ note:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h12l4 4v12H4z"/><path d="M8 12h8M8 16h5"/></svg>',
+ call:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 4h4l2 5-2.5 1.5a11 11 0 0 0 5 5L15 13l5 2v4a2 2 0 0 1-2 2A16 16 0 0 1 3 6a2 2 0 0 1 2-2"/></svg>',
+ email:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="m3 7 9 6 9-6"/></svg>',
+ meeting:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4"/></svg>',
+ stage:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 12h12M12 6l6 6-6 6"/></svg>',
+ system:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="8"/><path d="M12 8v4l3 2"/></svg>',
+ clock:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>',
+ tick:'<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.5"><path d="m5 12 5 5 9-10"/></svg>',
+};
+
+/* ---------- nav ---------- */
+const navItems = [
+ ['dashboard','Dashboard','dash'],['contacts','Contacts','contacts'],['companies','Companies','companies'],['leads','Leads','leads'],['opportunities','Opportunities','opps'],['tasks','Tasks','tasks'],['activity','Activity','activity'],['settings','Settings','settings']
+];
+function renderNav(route){
+  const openTasks = tasks.filter(t => !t.done && t.due <= '2026-09-06').length;
+  $('#nav').innerHTML = navItems.map(([r,l,i]) => `<a href="#${r}" class="${route.startsWith(r)?'active':''}">${icons[i]}<span>${l}</span>${r==='tasks'&&openTasks?`<span class="count">${openTasks}</span>`:''}${r==='leads'?`<span class="count">${leads.filter(l=>l.status==='new').length}</span>`:''}</a>`).join('');
+}
+
+/* ---------- views ---------- */
+function vDashboard(){
+  const open = opps.filter(o => stg(o.stage).kind === 'open');
+  const won = opps.filter(o => o.stage === 'won'), lost = opps.filter(o => o.stage === 'lost');
+  const pipeVal = open.reduce((a,o) => a + o.value, 0);
+  const weighted = open.reduce((a,o) => a + o.value * stg(o.stage).p / 100, 0);
+  const winRate = Math.round(won.length / (won.length + lost.length) * 100);
+  const newLeads = leads.filter(l => daysBetween(l.created, TODAY) <= 30).length;
+  const dueTasks = tasks.filter(t => !t.done && t.due <= '2026-09-06');
+  const overdue = dueTasks.filter(t => t.due < '2026-09-06').length;
+  const stale = open.filter(isStale);
+  const openStages = stages.filter(s => s.kind === 'open');
+  const maxVal = Math.max(...openStages.map(s => open.filter(o => o.stage === s.id).reduce((a,o)=>a+o.value,0)));
+  const attention = [...leads.filter(l => l.status === 'new' && !l.owner).map(l => ({t:l.name+' · '+l.co, s:'New lead, not yet contacted · '+rel(l.created), h:'#leads', k:'crit'})),
+    ...stale.map(o => ({t:o.name, s:`No stage change for ${daysBetween(o.entered,TODAY)} days · ${gbp(o.value)}`, h:'#opportunities', k:'warn'}))];
+  const recent = [...activities].sort((a,b) => b.at.localeCompare(a.at)).slice(0,6);
+  return `<div class="page">
+    <div class="page-head"><div><h1>Good morning, Andy</h1><div class="sub">Saturday 6 September · Northgate Studio · this month</div></div>
+      <div class="filters"><button class="chip on">This month</button><button class="chip">This quarter</button><button class="chip">Everyone</button></div></div>
+    <div class="tiles">
+      <div class="tile"><div class="label">Contacts</div><div class="value num">${contacts.length}</div><div class="delta up">+3 this month</div></div>
+      <div class="tile"><div class="label">New leads</div><div class="value num">${newLeads}</div><div class="delta up">+2 vs last month</div></div>
+      <div class="tile"><div class="label">Open pipeline</div><div class="value num">${gbp(pipeVal)}</div><div class="delta">${open.length} deals · ${gbp(Math.round(weighted))} weighted</div></div>
+      <div class="tile"><div class="label">Won this month</div><div class="value num">${gbp(won.reduce((a,o)=>a+o.value,0))}</div><div class="delta up">${won.length} deals</div></div>
+      <div class="tile"><div class="label">Win rate</div><div class="value num">${winRate}%</div><div class="delta">${won.length} won · ${lost.length} lost</div></div>
+      <div class="tile"><div class="label">Tasks due</div><div class="value num">${dueTasks.length}</div><div class="delta ${overdue?'down':''}">${overdue} overdue</div></div>
+    </div>
+    <div class="grid2">
+      <div class="card"><div class="hd"><h2>Pipeline by stage</h2><a href="#opportunities">Open board →</a></div><div class="bd bars">
+        ${openStages.map(s => { const os = open.filter(o => o.stage === s.id); const v = os.reduce((a,o)=>a+o.value,0); const st = os.filter(isStale).length;
+          return `<div class="bar"><span>${s.n}</span><div class="track"><div class="fill" style="width:${Math.max(6, v/maxVal*100)}%;background:${s.color}">${s.p}%</div></div><span class="val num">${gbp(v)}</span><span class="n num">${os.length}${st?` <span class="stale" style="color:var(--warn)" title="${st} stalled">⚠</span>`:''}</span></div>`; }).join('')}
+      </div></div>
+      <div class="card"><div class="hd"><h2>Needs attention</h2><span class="pill crit">${attention.length}</span></div><div class="list">
+        ${attention.map(a => `<div class="row" onclick="go('${a.h}')"><span class="pill ${a.k}" style="padding-left:6px"></span><div class="grow"><div class="t">${esc(a.t)}</div><div class="s">${esc(a.s)}</div></div></div>`).join('')}
+      </div></div>
+    </div>
+    <div class="grid2">
+      <div class="card"><div class="hd"><h2>My tasks</h2><a href="#tasks">All tasks →</a></div><div class="list">
+        ${dueTasks.filter(t=>t.who==='ag').map(taskRow).join('') || '<div class="empty">Nothing due. Nice.</div>'}
+      </div></div>
+      <div class="card"><div class="hd"><h2>Recent activity</h2><a href="#activity">Full feed →</a></div><div class="list">
+        ${recent.map(a => { const c = ct(a.contact); return `<div class="row" onclick="go('#contacts/${a.contact}')">${av(a.who)}<div class="grow"><div class="t">${esc(a.subject)}</div><div class="s">${c?full(c):''}${a.company?' · '+co(a.company).name:''} · ${rel(a.at)}</div></div></div>`; }).join('')}
+      </div></div>
+    </div>
+  </div>`;
+}
+function taskRow(t){
+  const c = t.rel.contact ? ct(t.rel.contact) : null, l = t.rel.lead ? ld(t.rel.lead) : null, o = t.rel.opp ? opp(t.rel.opp) : null;
+  const overdue = !t.done && t.due < '2026-09-06';
+  return `<div class="row ${t.done?'done':''}" onclick="${c?`go('#contacts/${c.id}')`:l?`go('#leads')`:''}">
+    <button class="check ${t.done?'done':''}" onclick="event.stopPropagation();toggleTask('${t.id}')" aria-label="Complete task">${t.done?icons.tick:''}</button>
+    <div class="grow"><div class="t">${esc(t.title)}</div><div class="s">${c?full(c):l?l.name+' (lead)':''}${o?' · '+esc(o.name):''}</div></div>
+    <span class="prio ${t.prio}">${t.prio}</span>
+    <span class="num" style="font-size:12.5px;color:${overdue?'var(--crit)':'var(--muted)'};font-weight:${overdue?600:400}">${overdue?'Overdue · ':''}${fmtDate(t.due)}</span>${av(t.who)}
+  </div>`;
+}
+
+let contactFilter = 'all';
+function vContacts(){
+  const list = contacts.filter(c => contactFilter === 'all' || (contactFilter === 'mine' ? c.owner === 'ag' : c.status === contactFilter));
+  return `<div class="page">
+    <div class="page-head"><div><h1>Contacts</h1><div class="sub">${contacts.length} people · ${contacts.filter(c=>c.status==='customer').length} customers</div></div>
+      <div style="display:flex;gap:8px"><button class="btn" onclick="toast('Export started: contacts.csv')">Export CSV</button><button class="btn primary" onclick="openNewContact()">+ New contact</button></div></div>
+    <div class="filters">${[['all','All'],['mine','Owned by me'],['customer','Customers'],['prospect','Prospects']].map(([k,l]) => `<button class="chip ${contactFilter===k?'on':''}" onclick="contactFilter='${k}';render()">${l}</button>`).join('')}<span class="chip" style="margin-left:auto">Tag ▾</span><span class="chip">Source ▾</span></div>
+    <div class="card wrap"><table class="table"><thead><tr><th>Name</th><th>Company</th><th>Email</th><th>Phone</th><th>Status</th><th>Tags</th><th>Owner</th><th>Last activity</th></tr></thead><tbody>
+      ${list.map(c => `<tr onclick="go('#contacts/${c.id}')"><td><div class="who"><span class="avatar">${initials(c)}</span><div>${esc(full(c))}<small>${esc(c.title)}</small></div></div></td><td>${c.company?esc(co(c.company).name):'<span style="color:var(--faint)">—</span>'}</td><td>${esc(c.email)}</td><td class="num">${esc(c.mobile||c.phone)}</td><td><span class="pill ${statusPill(c.status)}">${c.status}</span></td><td>${c.tags.map(t=>`<span class="tag">${t}</span>`).join('')}</td><td>${av(c.owner)}</td><td style="color:var(--muted)">${rel(c.last)}</td></tr>`).join('')}
+    </tbody></table>${list.length?'':'<div class="empty">No contacts match these filters. <a href="#" onclick="contactFilter=\'all\';render();return false">Clear filters</a></div>'}</div>
+  </div>`;
+}
+
+let composerTab = 'note';
+function vContact(id){
+  const c = ct(id); if (!c) return `<div class="page"><div class="empty">Contact not found.</div></div>`;
+  const cmp = c.company ? co(c.company) : null;
+  const acts = activities.filter(a => a.contact === id).sort((a,b) => (b.pinned?1:0)-(a.pinned?1:0) || b.at.localeCompare(a.at));
+  const myOpps = opps.filter(o => o.contact === id);
+  const myTasks = tasks.filter(t => t.rel.contact === id && !t.done);
+  const days = {}; acts.forEach(a => { const k = a.pinned ? 'Pinned' : new Date(a.at).toLocaleDateString('en-GB',{weekday:'long',day:'numeric',month:'long'}); (days[k] ||= []).push(a); });
+  return `<div class="page">
+    <div><div class="crumb"><a href="#contacts">Contacts</a> › ${esc(full(c))}</div>
+    <div class="page-head"><div class="head-card"><span class="avatar lg">${initials(c)}</span><div class="title"><h1>${esc(full(c))}</h1><div class="meta">${esc(c.title)}${cmp?` at <a href="#companies/${cmp.id}">${esc(cmp.name)}</a>`:''} · <span class="pill ${statusPill(c.status)}">${c.status}</span> ${c.tags.map(t=>`<span class="tag">${t}</span>`).join('')}</div></div></div>
+      <div style="display:flex;gap:8px"><a class="btn" href="tel:${c.mobile||c.phone}">Call</a><a class="btn" href="mailto:${c.email}">Email</a><button class="btn" onclick="toast('Task created')">+ Task</button><button class="btn" onclick="toast('Opportunity form would open here')">+ Opportunity</button></div></div></div>
+    <div class="detail">
+      <div class="card"><div class="hd"><h2>Details</h2><button class="btn ghost small">Edit</button></div><div class="bd"><dl class="dl">
+        <dt>Email</dt><dd><a href="mailto:${c.email}">${esc(c.email)}</a></dd><dt>Mobile</dt><dd class="num">${esc(c.mobile)||'—'}</dd><dt>Phone</dt><dd class="num">${esc(c.phone)||'—'}</dd>
+        <dt>Company</dt><dd>${cmp?`<a href="#companies/${cmp.id}">${esc(cmp.name)}</a>`:'—'}</dd><dt>Job title</dt><dd>${esc(c.title)}</dd><dt>Owner</dt><dd style="display:flex;align-items:center;gap:6px">${av(c.owner)} ${users[c.owner].n}</dd>
+        <dt>Source</dt><dd>${c.source}</dd><dt>Address</dt><dd>${cmp?cmp.city:'—'}</dd>
+      </dl>
+      <div style="margin-top:16px;padding-top:14px;border-top:1px solid var(--border)"><div style="font-size:11.5px;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);font-weight:600;margin-bottom:8px">Custom fields</div><dl class="dl"><dt>Preferred contact</dt><dd>${c.mobile?'Mobile':'Email'}</dd><dt>Newsletter</dt><dd>${c.status==='customer'?'Subscribed':'Not subscribed'}</dd><dt>Referral partner</dt><dd>${c.source==='Referral'?'Yes':'No'}</dd></dl></div>
+      </div></div>
+      <div class="card">
+        <div class="composer"><div class="tabs">${['note','call','email','meeting'].map(t=>`<button class="${composerTab===t?'on':''}" onclick="composerTab='${t}';render()">${t[0].toUpperCase()+t.slice(1)}</button>`).join('')}</div>
+          <textarea id="composerText" placeholder="${{note:'Add a note about '+c.first+'…',call:'What was discussed on the call?',email:'Log an email you sent or received…',meeting:'Meeting notes…'}[composerTab]}"></textarea>
+          <div class="foot"><label style="display:flex;align-items:center;gap:6px;color:var(--muted);font-size:13px;margin-right:auto"><input type="checkbox"> Create follow-up task</label><button class="btn primary small" onclick="addActivity('${c.id}')">Log ${composerTab}</button></div></div>
+        <div class="timeline">${Object.entries(days).map(([d,list]) => `<div class="day">${d}</div>${list.map(evRow).join('')}`).join('') || '<div class="empty">No activity yet.</div>'}</div>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:16px">
+        <div class="card"><div class="hd"><h3>Open tasks</h3><span class="pill neutral">${myTasks.length}</span></div><div class="bd mini">${myTasks.map(t=>`<div class="it"><button class="check" onclick="toggleTask('${t.id}')" aria-label="Complete"></button><div class="grow"><div class="t">${esc(t.title)}</div><div class="s" style="color:${t.due<'2026-09-06'?'var(--crit)':'var(--muted)'}">${t.due<'2026-09-06'?'Overdue · ':'Due '}${fmtDate(t.due)}</div></div></div>`).join('')||'<div class="s" style="color:var(--muted)">No open tasks</div>'}</div></div>
+        <div class="card"><div class="hd"><h3>Opportunities</h3><span class="pill neutral">${myOpps.length}</span></div><div class="bd mini">${myOpps.map(o=>{const s=stg(o.stage);return `<div class="it" onclick="go('#opportunities')"><div class="grow"><div class="t">${esc(o.name)}</div><div class="s"><span style="color:${s.color};font-weight:500">${s.n}</span> · ${s.kind==='open'?'closes '+fmtDate(o.close):s.kind}</div></div><span class="num" style="font-weight:600">${gbp(o.value)}</span></div>`;}).join('')||'<div class="s" style="color:var(--muted)">None yet</div>'}</div></div>
+        ${cmp?`<div class="card"><div class="hd"><h3>Colleagues at ${esc(cmp.name)}</h3></div><div class="bd mini">${contacts.filter(x=>x.company===cmp.id&&x.id!==id).map(x=>`<div class="it" onclick="go('#contacts/${x.id}')"><span class="avatar">${initials(x)}</span><div class="grow"><div class="t">${esc(full(x))}</div><div class="s">${esc(x.title)}</div></div></div>`).join('')||'<div class="s" style="color:var(--muted)">No other contacts</div>'}</div></div>`:''}
+      </div>
+    </div>
+  </div>`;
+}
+function evRow(a){
+  const c = ct(a.contact), o = a.opp ? opp(a.opp) : null;
+  const label = {note:'added a note',call:'logged a call',email:a.dir==='out'?'sent an email':'received an email',meeting:'logged a meeting',stage:'moved the opportunity',system:''}[a.type];
+  return `<div class="ev"><div class="ico ${a.type}">${icons[a.type]||icons.system}</div><div>
+    <div class="hd2"><b>${a.type==='system'?esc(a.subject):esc(users[a.who].n)}</b><span style="color:var(--muted)">${label}${a.type!=='system'&&a.subject?' · '+esc(a.subject):''}</span><span class="when">${fmtTime(a.at)}</span></div>
+    ${a.body?`<div class="body">${esc(a.body)}</div>`:''}
+    <div class="rel">${o?`<span class="tag">${esc(o.name)}</span>`:''}${a.company&&!location.hash.includes(a.company)?`<span class="tag">${esc(co(a.company).name)}</span>`:''}${a.pinned?'<span class="tag" style="color:var(--st3)">Pinned</span>':''}</div>
+  </div></div>`;
+}
+
+function vCompanies(){
+  return `<div class="page"><div class="page-head"><div><h1>Companies</h1><div class="sub">${companies.length} companies</div></div><button class="btn primary" onclick="toast('Company form would open here')">+ New company</button></div>
+    <div class="card wrap"><table class="table"><thead><tr><th>Company</th><th>Industry</th><th>Location</th><th>Contacts</th><th>Open value</th><th>Status</th><th>Owner</th></tr></thead><tbody>
+    ${companies.map(c => { const n = contacts.filter(x=>x.company===c.id).length; const v = opps.filter(o=>o.company===c.id&&stg(o.stage).kind==='open').reduce((a,o)=>a+o.value,0);
+      return `<tr onclick="go('#companies/${c.id}')"><td><div class="who"><span class="avatar c3">${c.name.split(' ').map(w=>w[0]).join('').slice(0,2)}</span><div>${esc(c.name)}<small>${c.domain}</small></div></div></td><td>${c.industry}</td><td>${c.city}</td><td class="num">${n}</td><td class="num">${v?gbp(v):'<span style="color:var(--faint)">—</span>'}</td><td><span class="pill ${statusPill(c.status)}">${c.status}</span></td><td>${av(c.owner)}</td></tr>`; }).join('')}
+    </tbody></table></div></div>`;
+}
+function vCompany(id){
+  const c = co(id); if(!c) return '<div class="page"><div class="empty">Company not found.</div></div>';
+  const people = contacts.filter(x=>x.company===id), os = opps.filter(o=>o.company===id);
+  const acts = activities.filter(a=>a.company===id).sort((a,b)=>b.at.localeCompare(a.at));
+  return `<div class="page"><div><div class="crumb"><a href="#companies">Companies</a> › ${esc(c.name)}</div>
+    <div class="page-head"><div class="head-card"><span class="avatar lg c3">${c.name.split(' ').map(w=>w[0]).join('').slice(0,2)}</span><div class="title"><h1>${esc(c.name)}</h1><div class="meta">${c.industry} · ${c.city} · <a href="https://${c.domain}" onclick="return false">${c.domain}</a> · <span class="pill ${statusPill(c.status)}">${c.status}</span></div></div></div>
+    <div style="display:flex;gap:8px"><button class="btn" onclick="openNewContact('${c.id}')">+ Contact</button><button class="btn" onclick="toast('Opportunity form would open here')">+ Opportunity</button></div></div></div>
+    <div class="detail">
+      <div style="display:flex;flex-direction:column;gap:16px">
+        <div class="card"><div class="hd"><h3>People</h3><span class="pill neutral">${people.length}</span></div><div class="bd mini">${people.map(x=>`<div class="it" onclick="go('#contacts/${x.id}')"><span class="avatar">${initials(x)}</span><div class="grow"><div class="t">${esc(full(x))}</div><div class="s">${esc(x.title)}</div></div></div>`).join('')}</div></div>
+        <div class="card"><div class="hd"><h3>Opportunities</h3><span class="num" style="font-weight:600">${gbp(os.filter(o=>stg(o.stage).kind==='open').reduce((a,o)=>a+o.value,0))} open</span></div><div class="bd mini">${os.map(o=>{const s=stg(o.stage);return `<div class="it" onclick="go('#opportunities')"><div class="grow"><div class="t">${esc(o.name)}</div><div class="s"><span style="color:${s.color};font-weight:500">${s.n}</span></div></div><span class="num" style="font-weight:600">${gbp(o.value)}</span></div>`;}).join('')||'<div class="s" style="color:var(--muted)">None</div>'}</div></div>
+      </div>
+      <div class="card" style="grid-column:span 2"><div class="hd"><h2>Timeline</h2><span style="color:var(--muted);font-size:13px">Includes everyone at ${esc(c.name)}</span></div><div class="timeline">${acts.map(a=>evRow(a)).join('')||'<div class="empty">No activity yet.</div>'}</div></div>
+    </div></div>`;
+}
+
+let leadFilter = 'open';
+function vLeads(){
+  const list = leads.filter(l => leadFilter==='open' || (leadFilter==='uncontacted' ? l.status==='new' : l.status===leadFilter));
+  return `<div class="page"><div class="page-head"><div><h1>Leads</h1><div class="sub">${leads.length} open · ${leads.filter(l=>l.status==='new').length} not yet contacted</div></div><button class="btn primary" onclick="toast('Lead form would open here')">+ New lead</button></div>
+    <div class="filters"><button class="chip ${leadFilter==='open'?'on':''}" onclick="leadFilter='open';render()">All open</button><button class="chip ${leadFilter==='uncontacted'?'on':''}" onclick="leadFilter='uncontacted';render()">Not yet contacted</button>${leadStatuses.map(s=>`<button class="chip ${leadFilter===s.id?'on':''}" onclick="leadFilter='${s.id}';render()">${s.n}</button>`).join('')}</div>
+    <div class="card wrap"><table class="table"><thead><tr><th>Lead</th><th>Status</th><th>Source</th><th>Enquiry</th><th>Owner</th><th>Created</th><th></th></tr></thead><tbody>
+    ${list.map(l => { const s = leadStatuses.find(x=>x.id===l.status); return `<tr onclick="toast('Lead detail would open here')"><td><div class="who"><span class="avatar c2">${l.name.split(' ').map(w=>w[0]).join('')}</span><div>${esc(l.name)}<small>${esc(l.co)}</small></div></div></td><td><span class="pill ${s.cls}">${s.n}</span></td><td>${l.source}</td><td style="max-width:360px;color:var(--muted)">${esc(l.note)}</td><td>${l.owner?av(l.owner):'<span class="pill crit">Unassigned</span>'}</td><td style="color:var(--muted)">${rel(l.created)}</td><td><button class="btn small" onclick="event.stopPropagation();convertLead('${l.id}')">Convert</button></td></tr>`; }).join('')}
+    </tbody></table></div>
+    <div style="color:var(--muted);font-size:13px">Lead statuses are editable in <a href="#settings">Settings</a>. Converting a lead creates a contact, a company and (optionally) an opportunity, and moves the history across.</div>
+  </div>`;
+}
+
+function vOpps(){
+  const open = opps.filter(o => stg(o.stage).kind === 'open');
+  return `<div class="page"><div class="page-head"><div><h1>Opportunities</h1><div class="sub">${open.length} open · ${gbp(open.reduce((a,o)=>a+o.value,0))} · ${open.filter(isStale).length} stalled</div></div>
+    <div style="display:flex;gap:8px"><span class="chip on">Board</span><span class="chip">List</span><span class="chip">New business ▾</span><button class="btn primary" onclick="toast('Opportunity form would open here')">+ New opportunity</button></div></div>
+    <div class="board">${stages.map(s => { const os = opps.filter(o=>o.stage===s.id); const v = os.reduce((a,o)=>a+o.value,0);
+      return `<div class="col" data-stage="${s.id}"><div class="ch"><span class="dot" style="background:${s.color}"></span><b>${s.n}</b><span class="n">${s.kind==='open'?s.p+'%':''}</span><span class="sum num">${os.length} · ${gbp(v)}</span></div>
+        ${os.map(o => { const c = ct(o.contact), cmp = o.company?co(o.company):null; const age = daysBetween(o.entered, TODAY);
+          return `<div class="opp" draggable="true" data-id="${o.id}" onclick="if(!this.classList.contains('dragging'))go('#contacts/${o.contact}')"><div class="t">${esc(o.name)}</div><div class="co">${cmp?esc(cmp.name):c?full(c):''}</div>
+            <div class="ft"><span class="v num">${gbp(o.value)}</span>${isStale(o)?`<span class="stale">${icons.clock} ${age}d</span>`:''}<span class="age num">${s.kind==='open'?fmtDate(o.close):s.kind==='won'?'Won '+fmtDate(o.close):'Lost '+fmtDate(o.close)}</span><span class="av">${av(o.owner)}</span></div></div>`; }).join('')}
+      </div>`; }).join('')}</div>
+    <div style="color:var(--muted);font-size:13px">Drag a card between stages. Dropping on Won marks the contact and company as customers.</div>
+  </div>`;
+}
+
+let taskFilter = 'mine';
+function vTasks(){
+  const list = tasks.filter(t => taskFilter==='all' || t.who==='ag');
+  const g = {Overdue:[],Today:[],Tomorrow:[],'This week':[],Later:[],Completed:[]};
+  list.forEach(t => { if (t.done) return g.Completed.push(t); const d = daysBetween('2026-09-06', t.due); g[d<0?'Overdue':d===0?'Today':d===1?'Tomorrow':d<=7?'This week':'Later'].push(t); });
+  return `<div class="page"><div class="page-head"><div><h1>Tasks</h1><div class="sub">${g.Overdue.length} overdue · ${g.Today.length} due today</div></div>
+    <div style="display:flex;gap:8px"><button class="chip ${taskFilter==='mine'?'on':''}" onclick="taskFilter='mine';render()">Mine</button><button class="chip ${taskFilter==='all'?'on':''}" onclick="taskFilter='all';render()">Everyone</button><button class="btn primary" onclick="toast('Task form would open here')">+ New task</button></div></div>
+    <div class="groups">${Object.entries(g).filter(([k,v])=>v.length).map(([k,v]) => `<div class="group"><h3 class="${k==='Overdue'?'crit':''}">${k} <span class="n">${v.length}</span></h3><div class="card list">${v.map(taskRow).join('')}</div></div>`).join('')}</div></div>`;
+}
+
+function vActivity(){
+  const acts = [...activities].sort((a,b)=>b.at.localeCompare(a.at));
+  const days = {}; acts.forEach(a => { const k = new Date(a.at).toLocaleDateString('en-GB',{weekday:'long',day:'numeric',month:'long'}); (days[k] ||= []).push(a); });
+  return `<div class="page"><div class="page-head"><div><h1>Activity</h1><div class="sub">Everything logged across Northgate Studio</div></div><div class="filters"><span class="chip on">All types</span><span class="chip">Calls</span><span class="chip">Emails</span><span class="chip">Notes</span><span class="chip">Everyone ▾</span></div></div>
+    <div class="card" style="max-width:820px"><div class="timeline">${Object.entries(days).map(([d,list]) => `<div class="day">${d}</div>${list.map(a => { const c = ct(a.contact); return evRow(a).replace('<div class="rel">', `<div class="rel"><span class="tag" style="cursor:pointer" onclick="go('#contacts/${a.contact}')">${c?esc(full(c)):''}</span>`); }).join('')}`).join('')}</div></div></div>`;
+}
+
+let settingsTab = 'pipeline';
+function vSettings(){
+  const tabs = [['pipeline','Pipeline stages'],['leads','Lead statuses'],['fields','Custom fields'],['members','Members'],['general','General']];
+  let body = '';
+  if (settingsTab==='pipeline') body = `<div class="card"><div class="hd"><div><h2>New business pipeline</h2><div style="color:var(--muted);font-size:13px">Rename, reorder and recolour stages. Every business gets its own.</div></div><button class="btn small" onclick="toast('Stage added')">+ Add stage</button></div><div class="bd stages">
+    ${stages.map(s => `<div class="stage"><span class="grip">⋮⋮</span><span class="dot" style="background:${s.color}"></span><input value="${esc(s.n)}" onchange="s=stages.find(x=>x.id==='${s.id}');s.n=this.value;toast('Stage renamed')"><span class="k num">${s.kind==='open'?`Probability ${s.p}%`:s.kind==='won'?'Closed won':'Closed lost'}</span><span class="k num">${s.stale?`Stalled after ${s.stale}d`:''}</span><span class="k num">${opps.filter(o=>o.stage===s.id).length} deals</span></div>`).join('')}
+    </div></div>`;
+  if (settingsTab==='leads') body = `<div class="card"><div class="hd"><h2>Lead statuses</h2><button class="btn small" onclick="toast('Status added')">+ Add status</button></div><div class="bd stages">${[...leadStatuses,{n:'Converted',cls:'good',fixed:'Converted'},{n:'Lost',cls:'neutral',fixed:'Lost'}].map(s=>`<div class="stage"><span class="grip">⋮⋮</span><span class="pill ${s.cls}" style="padding-left:6px"></span><input value="${s.n}"><span class="k">${s.fixed?s.fixed+' (fixed meaning)':'Open'}</span><span class="k"></span><span class="k num">${leads.filter(l=>leadStatuses.find(x=>x.n===s.n)?.id===l.status).length} leads</span></div>`).join('')}</div></div>`;
+  if (settingsTab==='fields') body = `<div class="card"><div class="hd"><h2>Custom fields · Contacts</h2><button class="btn small" onclick="toast('Field added')">+ Add field</button></div><div class="wrap"><table class="table"><thead><tr><th>Label</th><th>Type</th><th>Required</th><th>Show in list</th></tr></thead><tbody>
+    <tr><td>Preferred contact</td><td>Select (Email, Mobile, Phone)</td><td>No</td><td>No</td></tr><tr><td>Newsletter</td><td>Boolean</td><td>No</td><td>Yes</td></tr><tr><td>Referral partner</td><td>Boolean</td><td>No</td><td>No</td></tr><tr><td>Anniversary</td><td>Date</td><td>No</td><td>No</td></tr></tbody></table></div></div>`;
+  if (settingsTab==='members') body = `<div class="card"><div class="hd"><h2>Members</h2><button class="btn small primary" onclick="toast('Invitation sent')">Invite</button></div><div class="wrap"><table class="table"><thead><tr><th>Name</th><th>Email</th><th>Role</th><th>Last active</th></tr></thead><tbody>
+    <tr><td><div class="who">${av('ag')}Andy</div></td><td>andy@northgate.studio</td><td><span class="pill acc">Owner</span></td><td>Now</td></tr><tr><td><div class="who">${av('pn')}Priya Nair</div></td><td>priya@northgate.studio</td><td><span class="pill neutral">Manager</span></td><td>Yesterday</td></tr><tr><td><div class="who">${av('to')}Tom Okafor</div></td><td>tom@northgate.studio</td><td><span class="pill neutral">Member</span></td><td>3 days ago</td></tr></tbody></table></div></div>`;
+  if (settingsTab==='general') body = `<div class="card"><div class="hd"><h2>Organisation</h2></div><div class="form" style="max-width:640px"><label>Name<input value="Northgate Studio"></label><label>Currency<select><option>GBP (£)</option><option>EUR (€)</option><option>USD ($)</option></select></label><label>Timezone<select><option>Europe/London</option></select></label><label>Date format<select><option>6 Sep 2026</option><option>06/09/2026</option></select></label><label class="full" style="flex-direction:row;align-items:center;gap:8px"><input type="checkbox" style="width:auto"> Members can edit records they don't own</label><label class="full" style="flex-direction:row;align-items:center;gap:8px"><input type="checkbox" style="width:auto"> Members can export</label></div><div class="ft"><button class="btn primary" onclick="toast('Saved')">Save</button></div></div>`;
+  return `<div class="page"><div class="page-head"><div><h1>Settings</h1><div class="sub">Make the CRM fit how Northgate Studio works</div></div></div>
+    <div class="settings-nav">${tabs.map(([k,l])=>`<button class="chip ${settingsTab===k?'on':''}" onclick="settingsTab='${k}';render()">${l}</button>`).join('')}</div>${body}</div>`;
+}
+
+/* ---------- actions ---------- */
+function toggleTask(id){ const t = tasks.find(x=>x.id===id); t.done = !t.done; if (t.done) toast('Task completed'); render(); }
+function addActivity(contactId){
+  const text = $('#composerText').value.trim(); if (!text) return toast('Write something first');
+  const c = ct(contactId);
+  activities.unshift({id:'a'+Date.now(),type:composerTab,subject:{note:'Note',call:'Call with '+c.first,email:'Email to '+c.first,meeting:'Meeting with '+c.first}[composerTab],body:text,at:'2026-09-06T'+new Date().toTimeString().slice(0,5),who:'ag',contact:contactId,company:c.company,dir:'out'});
+  c.last = '2026-09-06'; toast(`${composerTab[0].toUpperCase()+composerTab.slice(1)} logged`); render();
+}
+function convertLead(id){
+  const l = ld(id); const [first,...rest] = l.name.split(' ');
+  const cid = 'c'+Date.now(), pid = 'p'+Date.now();
+  companies.push({id:cid,name:l.co,domain:l.email.split('@')[1],industry:'—',city:'—',status:'prospect',owner:'ag'});
+  contacts.unshift({id:pid,first,last:rest.join(' '),email:l.email,phone:'',mobile:'',title:'',company:cid,status:'prospect',source:l.source,owner:'ag',tags:[],last:'2026-09-06'});
+  opps.push({id:'o'+Date.now(),name:l.co+' — '+l.source+' enquiry',company:cid,contact:pid,value:0,stage:'qual',owner:'ag',close:'2026-10-06',entered:'2026-09-06'});
+  activities.unshift({id:'a'+Date.now(),type:'system',subject:'Converted from lead',body:l.note,at:'2026-09-06T'+new Date().toTimeString().slice(0,5),who:'ag',contact:pid,company:cid});
+  leads = leads.filter(x=>x.id!==id); tasks.forEach(t=>{ if(t.rel.lead===id){ delete t.rel.lead; t.rel.contact=pid; } });
+  toast('Lead converted: contact, company and opportunity created'); go('#contacts/'+pid);
+}
+function moveOpp(id, stageId){
+  const o = opp(id); if (o.stage === stageId) return;
+  const from = stg(o.stage), to = stg(stageId);
+  o.stage = stageId; o.entered = '2026-09-06';
+  activities.unshift({id:'a'+Date.now(),type:'stage',subject:to.kind==='won'?'Won':to.kind==='lost'?'Lost':'Moved to '+to.n,body:`${from.n} → ${to.n}${to.kind!=='open'?' · '+gbp(o.value):''}`,at:'2026-09-06T'+new Date().toTimeString().slice(0,5),who:'ag',contact:o.contact,company:o.company,opp:o.id});
+  if (to.kind==='won'){ o.close='2026-09-06'; const c = ct(o.contact); if (c) c.status='customer'; const cm = o.company?co(o.company):null; if (cm) cm.status='customer'; toast(`Won · ${gbp(o.value)} · ${c?full(c):''} is now a customer`); }
+  else if (to.kind==='lost'){ o.close='2026-09-06'; toast('Marked as lost'); }
+  else toast(`Moved to ${to.n}`);
+  render();
+}
+function wireBoard(){
+  let dragId = null;
+  document.querySelectorAll('.opp').forEach(el => {
+    el.addEventListener('dragstart', e => { dragId = el.dataset.id; el.classList.add('dragging'); e.dataTransfer.effectAllowed='move'; });
+    el.addEventListener('dragend', () => el.classList.remove('dragging'));
+  });
+  document.querySelectorAll('.col').forEach(col => {
+    col.addEventListener('dragover', e => { e.preventDefault(); col.classList.add('over'); });
+    col.addEventListener('dragleave', () => col.classList.remove('over'));
+    col.addEventListener('drop', e => { e.preventDefault(); col.classList.remove('over'); if (dragId) moveOpp(dragId, col.dataset.stage); dragId = null; });
+  });
+}
+
+/* ---------- new contact modal ---------- */
+function openNewContact(companyId=''){
+  $('#modal').hidden = false;
+  $('#modal').innerHTML = `<div class="panel" role="dialog" aria-label="New contact"><div class="in"><h2>New contact</h2><span style="flex:1"></span><button class="btn ghost small" onclick="closeModal()">Esc</button></div>
+    <form class="form" onsubmit="return saveContact(event)">
+      <label>First name<input name="first" required autofocus></label><label>Last name<input name="last"></label>
+      <label>Email<input name="email" type="email" oninput="dupCheck(this.value)"></label><label>Mobile<input name="mobile"></label>
+      <label>Company<select name="company"><option value="">— None —</option>${companies.map(c=>`<option value="${c.id}" ${c.id===companyId?'selected':''}>${esc(c.name)}</option>`).join('')}</select></label><label>Job title<input name="title"></label>
+      <label>Status<select name="status"><option>prospect</option><option>customer</option><option>other</option></select></label><label>Source<select name="source">${['Website','Referral','Phone','Email','Social','Event','Other'].map(s=>`<option>${s}</option>`).join('')}</select></label>
+      <div class="hint" id="dup" hidden></div>
+      <div class="ft full" style="padding:0;border:0"><button type="button" class="btn" onclick="closeModal()">Cancel</button><button class="btn primary">Save contact</button></div>
+    </form></div>`;
+  setTimeout(()=>$('#modal input')?.focus(), 30);
+}
+function dupCheck(v){ const d = contacts.find(c => c.email && c.email.toLowerCase() === v.trim().toLowerCase()); const el = $('#dup'); if (d){ el.hidden = false; el.innerHTML = `Possible duplicate: <a href="#contacts/${d.id}" onclick="closeModal()">${esc(full(d))}</a> already has this email.`; } else el.hidden = true; }
+function saveContact(e){
+  e.preventDefault(); const f = Object.fromEntries(new FormData(e.target)); const id = 'p'+Date.now();
+  contacts.unshift({id,first:f.first,last:f.last,email:f.email,phone:'',mobile:f.mobile,title:f.title,company:f.company,status:f.status,source:f.source,owner:'ag',tags:[],last:'2026-09-06'});
+  activities.unshift({id:'a'+Date.now(),type:'system',subject:'Contact created',body:'',at:'2026-09-06T'+new Date().toTimeString().slice(0,5),who:'ag',contact:id,company:f.company});
+  closeModal(); toast('Contact saved'); go('#contacts/'+id); return false;
+}
+function closeModal(){ $('#modal').hidden = true; $('#modal').innerHTML=''; }
+
+/* ---------- command palette ---------- */
+function openSearch(){
+  $('#cmdk').hidden = false;
+  $('#cmdk').innerHTML = `<div class="panel"><div class="in">${icons.contacts.replace('<svg','<svg width="18" height="18"')}<input id="q" placeholder="Search people, companies, leads, opportunities…" autocomplete="off"></div><div class="results" id="res"></div></div>`;
+  const q = $('#q'); q.focus(); q.addEventListener('input', () => searchRender(q.value)); searchRender('');
+}
+function searchRender(q){
+  q = q.trim().toLowerCase(); const m = s => !q || s.toLowerCase().includes(q);
+  const groups = [
+    ['Contacts', contacts.filter(c => m(full(c)) || m(c.email) || m((c.phone+c.mobile).replace(/\s/g,'')) ).slice(0,5).map(c => ({h:`#contacts/${c.id}`,t:full(c),s:c.company?co(c.company).name:c.title,a:`<span class="avatar">${initials(c)}</span>`}))],
+    ['Companies', companies.filter(c => m(c.name)||m(c.domain)).slice(0,4).map(c => ({h:`#companies/${c.id}`,t:c.name,s:c.industry,a:`<span class="avatar c3">${c.name.split(' ').map(w=>w[0]).join('').slice(0,2)}</span>`}))],
+    ['Leads', leads.filter(l => m(l.name)||m(l.co)).slice(0,3).map(l => ({h:'#leads',t:l.name,s:l.co,a:`<span class="avatar c2">${l.name.split(' ').map(w=>w[0]).join('')}</span>`}))],
+    ['Opportunities', opps.filter(o => m(o.name)).slice(0,4).map(o => ({h:'#opportunities',t:o.name,s:gbp(o.value)+' · '+stg(o.stage).n,a:`<span class="avatar c4">£</span>`}))],
+  ].filter(([,r]) => r.length);
+  $('#res').innerHTML = groups.map(([g,r]) => `<div class="grp">${g}</div>${r.map(x => `<div class="r" onclick="closeSearch();go('${x.h}')">${x.a}<span>${esc(x.t)}</span><span class="s">${esc(x.s)}</span></div>`).join('')}`).join('') || '<div class="empty">No matches.</div>';
+}
+function closeSearch(){ $('#cmdk').hidden = true; $('#cmdk').innerHTML=''; }
+
+/* ---------- router ---------- */
+function render(){
+  const h = (location.hash || '#dashboard').slice(1); const [route, id] = h.split('/');
+  renderNav(route);
+  const views = {dashboard:vDashboard, contacts: () => id ? vContact(id) : vContacts(), companies: () => id ? vCompany(id) : vCompanies(), leads:vLeads, opportunities:vOpps, tasks:vTasks, activity:vActivity, settings:vSettings};
+  $('#view').innerHTML = (views[route] || vDashboard)();
+  if (route === 'opportunities') wireBoard();
+  window.scrollTo(0,0);
+}
+window.addEventListener('hashchange', render);
+$('#searchBtn').addEventListener('click', openSearch);
+$('#newBtn').addEventListener('click', () => openNewContact());
+document.addEventListener('keydown', e => {
+  if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'k'){ e.preventDefault(); $('#cmdk').hidden ? openSearch() : closeSearch(); }
+  if (e.key === 'Escape'){ closeSearch(); closeModal(); }
+});
+$('#cmdk').addEventListener('click', e => { if (e.target === $('#cmdk')) closeSearch(); });
+$('#modal').addEventListener('click', e => { if (e.target === $('#modal')) closeModal(); });
+render();
+</script>
