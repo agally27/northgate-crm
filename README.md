@@ -16,3 +16,7 @@ No application code, migrations or configuration exist yet. Implementation (GCRM
 ## Proposed stack
 
 TypeScript, Next.js, PostgreSQL with row-level security, Drizzle ORM, Better Auth, Tailwind and shadcn/ui, pnpm. All proposed, none confirmed; see [`docs/02-proposed-architecture.md`](docs/02-proposed-architecture.md).
+
+## Live prototype
+
+The prototype is deployed as a static site at https://northgate-crm.vercel.app. The root `index.html` is generated from `prototype/crm-prototype.html` by `sh prototype/build-index.sh`; edit the source file, rerun the script, and commit both.
